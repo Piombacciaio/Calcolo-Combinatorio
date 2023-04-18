@@ -7,12 +7,14 @@ PSG.theme("DarkBlack")
 simple_disp = [
   [PSG.Text("Numero elementi"), PSG.Input("", key="-SIMPLE-DISP-LENGHTINPUT-")], 
   [PSG.Text("Classe"), PSG.Push(), PSG.Input("", key="-SIMPLE-DISP-CLASSINPUT-")],
+  [PSG.Checkbox("Visualizzare le disposizioni?", key="-SHOW-SIMPLE-DISP-", tooltip="Rende il processo più lento")],
   [PSG.Text("D"), PSG.Push(), PSG.Input("", size = (55, 5), disabled=True, key="-SIMPLE-DISP-OUTPUT-", text_color="black")],
   [PSG.Button("Calcola", key="-SIMPLE-DISP-CALCULATE-"), PSG.Button("Visualizza disposizioni", key="-SIMPLE-DISP-LIST-", disabled=True)],
 ]
 repeated_disp = [
   [PSG.Text("Numero elementi"), PSG.Input("", key="-REPEATED-DISP-LENGHTINPUT-")], 
   [PSG.Text("Classe"), PSG.Push(), PSG.Input("", key="-REPEATED-DISP-CLASSINPUT-")],
+  [PSG.Checkbox("Visualizzare le disposizioni?", key="-SHOW-REPEATED-DISP-", tooltip="Rende il processo più lento")],
   [PSG.Text("D'"), PSG.Push(), PSG.Input("", size = (55, 5), disabled=True, key="-REPEATED-DISP-OUTPUT-", text_color="black")],
   [PSG.Button("Calcola", key="-REPEATED-DISP-CALCULATE-"), PSG.Button("Visualizza disposizioni", key="-REPEATED-DISP-LIST-", disabled=True)],
 ]
@@ -26,6 +28,7 @@ disp_tab = [
 
 simple_perm = [
   [PSG.Text("Numero elementi"), PSG.Input("", key="-SIMPLE-PERM-LENGHTINPUT-")], 
+  [PSG.Checkbox("Permutazione circolare?", key="-CIRCLE-PERM-")],
   [PSG.Text()],
   [PSG.Text("P"), PSG.Push(), PSG.Input("", size = (55, 5), disabled=True, key="-SIMPLE-PERM-OUTPUT-", text_color="black")],
   [PSG.Button("Calcola", key="-SIMPLE-PERM-CALCULATE-")],
@@ -33,6 +36,7 @@ simple_perm = [
 repeated_perm = [
   [PSG.Text("Numero elementi"), PSG.Input("", key="-REPEATED-PERM-LENGHTINPUT-")], 
   [PSG.Text("Elementi ripetuti"), PSG.Push(), PSG.Input("", key="-REPEATED-PERM-REPSINPUT-", tooltip="Separa gli elementi ripetuti con una virgola")],
+  [PSG.Text(), PSG.VPush()],
   [PSG.Text("P'"), PSG.Push(), PSG.Input("", size = (55, 5), disabled=True, key="-REPEATED-PERM-OUTPUT-", text_color="black")],
   [PSG.Button("Calcola", key="-REPEATED-PERM-CALCULATE-")],
 ]
@@ -47,12 +51,14 @@ perm_tab = [
 simple_comb = [
   [PSG.Text("Numero elementi"), PSG.Input("", key="-SIMPLE-COMB-LENGHTINPUT-")], 
   [PSG.Text("Classe"), PSG.Push(), PSG.Input("", key="-SIMPLE-COMB-CLASSINPUT-")],
+  [PSG.Text(), PSG.VPush()],
   [PSG.Text("C"), PSG.Push(), PSG.Input("", size = (55, 5), disabled=True, key="-SIMPLE-COMB-OUTPUT-", text_color="black")],
   [PSG.Button("Calcola", key="-SIMPLE-COMB-CALCULATE-")],
 ]
 repeated_comb = [
   [PSG.Text("Numero elementi"), PSG.Input("", key="-REPEATED-COMB-LENGHTINPUT-")], 
   [PSG.Text("Classe"), PSG.Push(), PSG.Input("", key="-REPEATED-COMB-CLASSINPUT-")],
+  [PSG.Text(), PSG.VPush()],
   [PSG.Text("C'"), PSG.Push(), PSG.Input("", size = (55, 5), disabled=True, key="-REPEATED-COMB-OUTPUT-", text_color="black")],
   [PSG.Button("Calcola", key="-REPEATED-COMB-CALCULATE-")],
 ]
@@ -74,29 +80,47 @@ default_view = [
   [PSG.Button("Source", key="-VIEW-SOURCE-")]
 ]
 
-def calculate_simple_disp(n:int, k:int):
+def calculate_simple_disp(n:int, k:int, return_list:bool=False):
   """Le disposizioni semplici di n elementi distinti di classe k (con 0 < k <= n)
   sono tutti i gruppi di k elementi scelti fra gli n, che differiscono per almeno un
   elemento o per l'ordine con cui gli elementi sono collocati"""
-  simple_disp = permutations(range(n), k)
-  return list(simple_disp)
+  if k <= n:
+    if return_list:
+      simple_disp = permutations(range(n), k)
+      return list(simple_disp)
+    else:
+      simple_disp = factorial(n) / factorial(n-k)
+      return simple_disp
+  else:
+    PSG.popup_error("La classe dell'insieme non può essere maggiore del numero di elementi che compongono l'insieme stesso", title="")
 
-def calculate_repeated_disp(n:int, k:int):
+def calculate_repeated_disp(n:int, k:int, return_list:bool=False):
   """Le disposizioni con ripetizione di n elementi distinti di classe k (con k numero 
   naturale qualunque non nullo) sono tutti i gruppi di k elementi, anche ripetuti,
   scelti fra gli n, che differiscono per almeno un elemento o per il loro ordine"""
-  rep_disp = [p for p in product(range(n), repeat=k)]
-  return rep_disp
+  if return_list:
+    rep_disp = [p for p in product(range(n), repeat=k)]
+    return rep_disp
+  else:
+    rep_disp = n**k
+    return rep_disp
 
 def calculate_simple_perm(n:int):
   """Le permutazioni semplici di n elementi distinti sono tutti i gruppi formati
   dagli n elementi, che differiscono per il loro ordine"""
   return factorial(n)
 
+def calculate_circular_perm(n:int):
+  """Una permutazione è una permutazione di elementi diversi tra loro in cui non 
+  è possibile distinguere tra il primo e l'ultimo elemento; in altri termini una 
+  permutazione circolare è il risultato di uno scambio dell'ordine di elementi 
+  distinti disposti in modo circolare."""
+  return factorial(n-1)
+
 def calculate_repeated_perm(n:int, k:list):
   """Le permutazioni con ripetizione di n elementi, di cui h, k, … ripetuti, sono
   tutti i gruppi formati dagli n elementi, che differiscono per l'ordine in cui si pre-
-  sentano gli elementi distinti e la posizione che occupano gli elementi ripetut"""
+  sentano gli elementi distinti e la posizione che occupano gli elementi ripetuti"""
   denom = 1
   if sum(k) <= n:
     for x in k:
@@ -145,37 +169,42 @@ def main():
 
         n = int(values["-SIMPLE-DISP-LENGHTINPUT-"])
         k = int(values["-SIMPLE-DISP-CLASSINPUT-"])
+        return_list = values["-SHOW-SIMPLE-DISP-"]
 
         global simple_disp
-        simple_disp = calculate_simple_disp(n, k)
+        simple_disp = calculate_simple_disp(n, k, return_list)
 
-        window["-SIMPLE-DISP-OUTPUT-"].update(len(simple_disp))
-        window["-SIMPLE-DISP-LIST-"].update(disabled=False)
+        window["-SIMPLE-DISP-OUTPUT-"].update(len(simple_disp) if type(simple_disp) == list else simple_disp)
+        window["-SIMPLE-DISP-LIST-"].update(disabled=False) if return_list else window["-SIMPLE-DISP-LIST-"].update(disabled=True)
       
       if events == "-SIMPLE-DISP-LIST-":
-        PSG.popup_scrolled(simple_disp, title="Permutazioni")
+        PSG.popup_scrolled(simple_disp, title="Disposizioni")
       
       #REPEATED DISP
       if events == "-REPEATED-DISP-CALCULATE-":
 
         n = int(values["-REPEATED-DISP-LENGHTINPUT-"])
         k = int(values["-REPEATED-DISP-CLASSINPUT-"])
+        return_list = values["-SHOW-REPEATED-DISP-"]
 
         global rep_disp
-        rep_disp = calculate_repeated_disp(n, k)
+        rep_disp = calculate_repeated_disp(n, k, return_list)
 
-        window["-REPEATED-DISP-OUTPUT-"].update(len(rep_disp))
-        window["-REPEATED-DISP-LIST-"].update(disabled=False)
+        window["-REPEATED-DISP-OUTPUT-"].update(len(rep_disp) if type(rep_disp) == list else rep_disp)
+        window["-REPEATED-DISP-LIST-"].update(disabled=False) if return_list else window["-REPEATED-DISP-LIST-"].update(disabled=True)
 
       if events == "-REPEATED-DISP-LIST-":
-        PSG.popup_scrolled(rep_disp, title="Permutazioni")
+        PSG.popup_scrolled(rep_disp, title="Disposizioni")
 
       #SIMPLE PERM
       if events == "-SIMPLE-PERM-CALCULATE-":
         n = int(values["-SIMPLE-PERM-LENGHTINPUT-"])
-
+        circular = values["-CIRCLE-PERM-"]
         global simple_perm
-        simple_perm = calculate_simple_perm(n)
+        if circular:
+          simple_perm = calculate_circular_perm(n)
+        else:
+          simple_perm = calculate_simple_perm(n)
 
         window["-SIMPLE-PERM-OUTPUT-"].update(simple_perm)
       
